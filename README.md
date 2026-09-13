@@ -3,7 +3,8 @@
 **Search game releases without leaving the Steam page.**
 
 <p align="center">
-  <a href="README.md">🇬🇧 English</a> · <a href="README.ru.md">🇷🇺 Русский</a>
+  <a href="README.md"><img src="https://img.shields.io/badge/README-English-blue?style=for-the-badge" alt="English README"></a>
+  <a href="README.ru.md"><img src="https://img.shields.io/badge/README-%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9-red?style=for-the-badge" alt="Русский README"></a>
 </p>
 
 <p align="center">
