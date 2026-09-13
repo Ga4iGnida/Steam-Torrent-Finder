@@ -3,12 +3,28 @@
 **Search game releases without leaving the Steam page.**
 
 <p align="center">
+  <a href="README.md">🇬🇧 English</a> · <a href="README.ru.md">🇷🇺 Русский</a>
+</p>
+
+<p align="center">
   <img src="assets/hero.png" alt="Steam Torrent Finder" width="100%">
 </p>
 
 Steam Torrent Finder is a Chromium extension that adds a **Search torrents** button to Steam game pages. It searches the enabled sources in parallel and shows results as they come in.
 
-### What it does
+## Contents
+
+- [What it does](#what-it-does)
+- [Screenshots](#screenshots)
+- [Built-in sources](#built-in-sources)
+- [Custom trackers](#custom-trackers)
+- [Installation](#installation)
+- [Privacy & security](#privacy--security)
+- [Limitations](#limitations)
+- [Testing](#testing)
+- [Links](#links)
+
+## What it does
 
 - 5 built-in sources: PirateBay, 1337x, Rutracker, FreeTP and Online-Fix
 - Custom trackers using a simple `{q}` search URL
@@ -29,6 +45,8 @@ Steam Torrent Finder is a Chromium extension that adds a **Search torrents** but
 | ![Popup](assets/screenshot-popup.png) | ![Custom tracker](assets/screenshot-custom-tracker.png) |
 | Settings and source folders | Custom tracker setup and Test button |
 
+[Back to contents](#contents)
+
 ## Built-in sources
 
 | Source | What you get |
@@ -43,11 +61,13 @@ Rutracker is disabled by default.
 
 Third-party sites can change or go offline at any time, so a source may stop working until its parser is updated.
 
+[Back to contents](#contents)
+
 ## Custom trackers
 
-Custom trackers are deliberately simple: a **GET** search URL with `{q}` where the search term goes.
+Custom trackers use a **GET** search URL with `{q}` where the search term goes.
 
-For example:
+Example:
 
 ```text
 https://example.com/search?q={q}
@@ -62,7 +82,9 @@ In the popup:
 
 The Test request uses no cookies and no retries. Custom trackers also do not receive cookies.
 
-More details and examples: [docs/CUSTOM_TRACKERS.md](docs/CUSTOM_TRACKERS.md)
+More details: [docs/CUSTOM_TRACKERS.md](docs/CUSTOM_TRACKERS.md)
+
+[Back to contents](#contents)
 
 ## Installation
 
@@ -77,16 +99,18 @@ The extension is not on the Chrome Web Store yet.
 
 Works with Chromium-based desktop browsers that support Manifest V3. The project is developed and tested with Chrome.
 
+[Back to contents](#contents)
+
 ## Privacy & security
 
 The extension has no account system, backend or analytics.
-
-A few important details:
 
 - Third-party titles, URLs and magnets are validated before they are shown.
 - Custom tracker links are restricted to the same origin as the tracker.
 - Cookies are only used for the built-in sources that need a logged-in session. Custom trackers never get them.
 - Requests go directly from your browser, so this is **not** a VPN, proxy or anonymity tool.
+
+[Back to contents](#contents)
 
 ## Limitations
 
@@ -95,57 +119,23 @@ A few important details:
 - Full Rutracker results require an active login in the same browser.
 - The extension searches and opens links; it is not a download manager.
 
+[Back to contents](#contents)
+
 ## Testing
 
 There is no build step and no package manager required.
 
-Run the tests with:
-
 ```bash
 node tests/run.js
 ```
+
+[Back to contents](#contents)
 
 ## Links
 
 - [GitHub repository](https://github.com/Ga4iGnida/Steam-Torrent-Finder)
 - [Latest release](https://github.com/Ga4iGnida/Steam-Torrent-Finder/releases/latest)
 - [Report a bug](https://github.com/Ga4iGnida/Steam-Torrent-Finder/issues/new)
+- [Support the project on Boosty](https://boosty.to/ga4ignida)
 
-### Support the project
-
-If you find it useful and want to support development, you can do that on Boosty:
-
-**https://boosty.to/ga4ignida**
-
-Support is completely optional.
-
-## Русская версия
-
-**Steam Torrent Finder** добавляет кнопку поиска прямо на страницу игры в Steam. Расширение параллельно опрашивает включённые источники и показывает результаты по мере их появления.
-
-Основное:
-
-- 5 встроенных источников
-- свои источники через URL с `{q}`
-- папки и включение/выключение источников
-- русский и английский интерфейс
-- фильтрация и группировка результатов
-- проверка ссылок и магнитов
-- без своего сервера и аналитики
-
-### Установка
-
-1. Скачай или клонируй репозиторий.
-2. Открой `chrome://extensions`.
-3. Включи **Режим разработчика**.
-4. Нажми **Загрузить распакованное расширение**.
-5. Выбери папку, где лежит `manifest.json`.
-6. Открой страницу любой игры в Steam.
-
-Для своего источника нужен обычный GET-URL с `{q}` вместо поискового запроса. Перед сохранением его можно проверить кнопкой **Test**.
-
-[Репозиторий](https://github.com/Ga4iGnida/Steam-Torrent-Finder) · [Ошибки](https://github.com/Ga4iGnida/Steam-Torrent-Finder/issues/new) · [Поддержать автора](https://boosty.to/ga4ignida)
-
-## License
-
-A license has not been selected yet.
+[⬆ Back to top](#steam-torrent-finder)
