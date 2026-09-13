@@ -1,0 +1,30 @@
+# OS noise
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Node (tests/tooling only)
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# Build artifacts / packaged archives
+*.zip
+*.crx
+*.pem
+
+# Local environment and secrets
+.env
+.env.*
+*.local
+
+# Temporary / working directories
+tmp/
+.tmp/
+.shots/

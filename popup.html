@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Steam Torrent Finder</title>
+  <style>
+    :root {
+      --bg: #1b2838;
+      --panel: #16202d;
+      --border: #417a9b;
+      --text: #c7d5e0;
+      --text-dim: #8f98a0;
+      --accent: #67c1f5;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 340px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Motiva Sans", "Segoe UI", Arial, sans-serif;
+      font-size: 13px;
+      padding: 14px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 14px;
+      color: #fff;
+      letter-spacing: 0.2px;
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 1px;
+      border: 1px solid #3d4450;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .lang-switch button {
+      padding: 3px 9px;
+      border: none;
+      background: #3d4450;
+      color: var(--text-dim);
+      font-family: inherit;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s;
+    }
+
+    .lang-switch button.active {
+      background: var(--accent);
+      color: #1b2838;
+    }
+
+    .lang-switch button:not(.active):hover { background: #4e585f; }
+
+    .tracker-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tracker-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+      user-select: none;
+    }
+
+    .tracker-row:hover { border-color: var(--border); }
+
+    .folder-head {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .folder-title {
+      flex: 1;
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      color: var(--accent);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .folder-tab-sel {
+      background: #3d4450;
+      border: none;
+      border-radius: 3px;
+      color: #8f98a0;
+      font-family: inherit;
+      font-size: 10px;
+      padding: 2px 4px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .folder-del {
+      border: none;
+      background: transparent;
+      color: #67707b;
+      font-size: 12px;
+      padding: 1px 4px;
+      cursor: pointer;
+      border-radius: 3px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
+    .folder-del:hover { color: #ff5f5f; background: rgba(255,255,255,0.06); }
+
+    .folder-body { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; min-height: 26px; }
+
+    .folder-body.drop-hover {
+      outline: 1px dashed var(--accent);
+      outline-offset: 3px;
+      border-radius: 4px;
+    }
+
+    .tracker-row.dragging { opacity: 0.35; }
+
+    .row-del {
+      border: none;
+      background: transparent;
+      color: #67707b;
+      font-size: 11px;
+      padding: 1px 3px;
+      margin-left: 6px;
+      cursor: pointer;
+      border-radius: 3px;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .row-del:hover { color: #ff5f5f; }
+
+    .add-block {
+      margin-top: 12px;
+      padding: 9px 10px;
+      background: var(--panel);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 5px;
+    }
+
+    .add-block .add-title {
+      font-size: 10.5px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 7px;
+    }
+
+    .add-block input[type="text"], .add-block select {
+      width: 100%;
+      background: #121820;
+      border: 1px solid #3d4450;
+      border-radius: 3px;
+      color: #c7d5e0;
+      font-family: inherit;
+      font-size: 11.5px;
+      padding: 5px 8px;
+      outline: none;
+    }
+
+    .add-block input[type="text"]::placeholder { color: #5c6670; }
+    .add-block input[type="text"]:focus { border-color: var(--accent); }
+
+    .add-row { display: flex; gap: 6px; margin-top: 6px; }
+
+    .btn-accent {
+      background: var(--accent);
+      border: none;
+      color: #1b2838;
+      font-family: inherit;
+      font-weight: 600;
+      font-size: 11.5px;
+      padding: 5px 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .btn-accent:hover { background: #8ac9f8; }
+
+    .check-mini {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 10.5px;
+      color: var(--text-dim);
+      user-select: none;
+      cursor: pointer;
+    }
+    .check-mini input { accent-color: var(--accent); cursor: pointer; }
+
+    .err-note {
+      margin-top: 6px;
+      font-size: 10.5px;
+      color: #ff5f5f;
+      display: none;
+    }
+    .err-note.show { display: block; }
+
+    .test-hint {
+      margin-top: 6px;
+      font-size: 10.5px;
+      line-height: 1.4;
+      color: var(--text-dim);
+      min-height: 0;
+      word-break: break-word;
+      display: none;
+    }
+    .test-hint.good { display: block; color: #8ac9f8; }
+    .test-hint.bad { display: block; color: #ff5f5f; }
+
+    .tracker-row input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
+      width: 34px;
+      height: 18px;
+      background: #3d4450;
+      border-radius: 9px;
+      position: relative;
+      cursor: pointer;
+      transition: background 0.2s;
+      flex-shrink: 0;
+    }
+
+    .tracker-row input[type="checkbox"]::after {
+      content: '';
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 14px;
+      height: 14px;
+      background: #8f98a0;
+      border-radius: 50%;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    .tracker-row input[type="checkbox"]:checked {
+      background: #5ca83f;
+    }
+
+    .tracker-row input[type="checkbox"]:checked::after {
+      transform: translateX(16px);
+      background: #fff;
+    }
+
+    .tracker-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .tracker-name {
+      font-weight: 600;
+      color: #e6eef4;
+    }
+
+    .save-hint {
+      margin-top: 14px;
+      font-size: 11px;
+      color: var(--accent);
+      text-align: center;
+      min-height: 14px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .save-hint.show { opacity: 1; }
+
+    .footer {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.07);
+      font-size: 11px;
+      color: var(--text-dim);
+      text-align: center;
+      line-height: 1.6;
+    }
+
+    .disclaimer {
+      margin-top: 8px;
+      padding: 7px 9px;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-left: 3px solid #b0761f;
+      border-radius: 3px;
+      background: rgba(255,255,255,0.03);
+      font-size: 10.5px;
+      line-height: 1.5;
+      text-align: left;
+      color: var(--text-dim);
+    }
+
+    .footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .footer a:hover { text-decoration: underline; }
+
+    .footer-links { margin-top: 6px; }
+    .footer-links .sep { margin: 0 7px; opacity: 0.5; }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <h1 id="ui-title">Steam Torrent Finder</h1>
+    <div class="lang-switch">
+      <button type="button" id="lang-ru">Рус</button>
+      <button type="button" id="lang-en">Eng</button>
+    </div>
+  </div>
+
+  <div class="tracker-list" id="trackerList">
+    <!-- Трекеры рендерятся из скрипта -->
+  </div>
+
+  <div class="save-hint" id="saveHint"></div>
+
+  <div class="add-block">
+    <div class="add-title" id="ui-folders-title">Папки</div>
+    <div class="add-row">
+      <input type="text" id="newFolderName">
+      <button type="button" class="btn-accent" id="addFolderBtn">+</button>
+    </div>
+  </div>
+
+  <div class="add-block">
+    <div class="add-title" id="ui-custom-title">Кастомный трекер</div>
+    <div id="customForm">
+      <input type="text" id="customName">
+      <div style="margin-top:6px;">
+        <input type="text" id="customUrl" placeholder="https://rutor.info/search/torrent/0/0/0/{q}">
+      </div>
+      <div class="add-row">
+        <label class="check-mini" for="customEnc1251"><input type="checkbox" id="customEnc1251"> Windows-1251</label>
+        <label class="check-mini" for="customMagnet"><input type="checkbox" id="customMagnet" checked> склонить до магнита</label>
+      </div>
+      <div class="add-row">
+        <select id="customFolder"></select>
+        <button type="button" class="btn-accent" id="testCustomBtn">Проверить</button>
+        <button type="button" class="btn-accent" id="addCustomBtn">+</button>
+      </div>
+      <div class="test-hint" id="testCustomHint"></div>
+      <div class="err-note" id="customErr"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div id="ui-help"></div>
+    <div class="footer-links">
+      <a href="https://github.com/Ga4iGnida/Steam-Torrent-Finder" target="_blank" rel="noopener" id="ui-github">GitHub</a>
+      <span class="sep">·</span>
+      <a href="https://boosty.to/ga4ignida" target="_blank" rel="noopener" id="ui-boosty">Поддержать автора</a>
+    </div>
+    <div class="disclaimer" id="ui-disclaimer"></div>
+  </div>
+
+  <script src="common.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
