@@ -1,114 +1,66 @@
-# Custom Trackers — Steam Torrent Finder
+# Custom trackers
 
-This document explains how custom trackers work: what a search template is, how the built-in **Test** button behaves, what the parser can and cannot do, and how to troubleshoot a tracker that returns nothing.
+Custom trackers let you add a site without changing the extension code.
 
----
+The only requirement is a normal **GET** search URL with `{q}` where the game name should go.
 
-## What is a custom tracker?
+Example:
 
-A custom tracker is any website the extension can query through a **plain GET search URL**. Instead of relying on a built-in parser, the extension:
+```text
+https://example.com/search?q={q}
+```
 
-1. takes your search URL template,
-2. replaces `{q}` with the URL-encoded game name,
-3. downloads the resulting page,
-4. collects links from it, filters them for relevance to the game title,
-5. shows them in the results panel (optionally fetching magnet links from the linked pages).
+## Add one
 
-Custom trackers never receive your cookies — all custom tracker requests are sent with `credentials: 'omit'`.
+1. Open the extension popup.
+2. Go to **Custom tracker**.
+3. Paste the search URL and make sure it contains `{q}`.
+4. Press **Test**.
+5. Save the tracker if the test finds the expected links.
 
----
+The extension URL-encodes the game name automatically.
 
-## The `{q}` template
+### A real example
 
-`{q}` is a placeholder for the search query (the game name). Everything else in the URL stays as you typed it.
+```text
+https://rutor.info/search/torrent/0/0/0/{q}
+```
 
-| You paste | The extension requests (for game "Deep Rock Galactic") |
-| --------- | ----------------------------------------------------- |
-| `https://example.com/?s={q}` | `https://example.com/?s=Deep%20Rock%20Galactic` |
-| `https://rutor.info/search/torrent/0/0/0/{q}` | `https://rutor.info/search/torrent/0/0/0/Deep%20Rock%20Galactic` |
-
-The query is URL-encoded automatically. A template **must** contain `{q}` — otherwise the tracker cannot be saved and the Test button reports an error.
-
-### Known templates (auto-normalized)
-
-For well-known sites the popup can rewrite your URL to a verified search template automatically. Currently recognized hosts:
-
-| Site | Verified template |
-| ---- | ----------------- |
-| rutor.info | `https://rutor.info/search/torrent/0/0/0/{q}` |
-| byxatab.com | `https://byxatab.com/?do=search&subaction=search&story={q}` |
-| thelastgame.ru | `https://thelastgame.ru/?s={q}` |
-| small-games.info | `https://small-games.info/?go=search&search_text={q}` |
-
-If the host is not recognized, the popup tries a best-effort normalization: it takes the last query parameter with the longest value and replaces it with `{q}`. Always verify the result with the **Test** button.
-
----
-
-## The Test button
-
-**Test** performs a **single** search request with a test query — no retries, no cookies — and shows:
-
-- up to **3 extracted titles** from the results page, or
-- a concrete error (e.g. HTTP status, empty template, no links found).
-
-Use it to check a tracker before saving. Note that the test query is a fixed word, not a real game title, so what matters is whether titles are extracted at all — not how many.
-
----
+For a few known sites the popup can normalize the URL for you. It is still a good idea to press **Test** before saving.
 
 ## Options
 
-| Option | What it does | When to use |
-| ------ | ------------ | ----------- |
-| **Windows-1251** | Decodes the response using windows-1251 instead of UTF-8 | Old Russian sites that display mojibake (`Ðèòóàë`) |
-| **Grab magnet from release pages** (on by default) | Fetches up to 5 top result pages to extract `magnet:` links | Trackers that show magnets on release pages, not in the search list |
-| **Folder** | Which folder/tab the tracker appears in | Organize sources, e.g. a custom folder for one site |
+**Windows-1251** — useful for older Russian sites that are encoded that way.
 
----
+**Grab magnet from release pages** — if the search page only links to release pages, the extension can open the top few pages and look for a magnet there.
 
-## How the parser works
+## What works
 
-- It collects `<a href>` links whose visible text is at least 4 characters long.
-- Relative links are resolved against the search URL; only **same-origin** `http(s)` links are accepted as results (a link must point to the same site).
-- Links that already are `magnet:` are picked up directly and validated.
-- Results are scored against the game title (the same relevance pipeline used for built-in sources, threshold 65) and limited to the **top 10**.
-- If the page contains links but none are relevant, the result is an honest "nothing found" — but if the page contains no usable links at all, the result is "unknown layout" (which is retried).
-- With **Grab magnet** enabled, the top 5 result pages are fetched to extract magnet links and dates. The step is bounded so a single search never storms a site.
+Custom trackers work best with server-rendered search pages where results are normal `<a href>` links.
 
----
+The parser:
 
-## Limitations — when a custom tracker will NOT work
+- resolves relative links;
+- keeps only same-origin `http(s)` links;
+- filters results by the game name;
+- validates magnet links before showing them.
 
-| Situation | Why it fails |
-| --------- | ------------ |
-| Results rendered by JavaScript | The extension does not execute page scripts; it parses the HTML it receives. |
-| Search form uses POST | A search template must be a plain GET URL. |
-| CAPTCHA / anti-bot wall | There is no interactive browser session behind the request. |
-| Site requires login | Custom trackers are always requested **without cookies**, so members-only pages return the guest version. |
-| Redirect chains ending in a different host | Only same-origin links become results; the final page is what gets parsed, but cross-host links are dropped. |
-| Catalog-style pages with dynamic filters | The parser follows links; it cannot fill forms or click buttons. |
-| Onclick-based navigation (`href="#"`) | There is no real URL to follow. |
+## What does not work
 
-Third-party sites change their markup at any time. While built-in parsers are covered by unit tests, a custom tracker depends entirely on the target site's current HTML — it can stop working without any changes on our side.
+- JavaScript-only search results
+- POST-only search forms
+- CAPTCHA / anti-bot pages
+- login-only pages
+- sites that hide navigation in JavaScript instead of real links
 
----
+Custom trackers are requested **without cookies**, so a site that only works while logged in will not work here.
 
-## Troubleshooting
+## If Test finds nothing
 
-| Symptom | What to try |
-| ------- | ----------- |
-| "Template must contain `{q}`" | Add `{q}` where the search term goes. |
-| Test returns 0 titles, no error | Open the search URL manually in a browser tab. If you see results there but the test finds nothing, the page likely renders via JavaScript or uses a POST form. |
-| Test returns an HTTP error | The site blocks datacenter/extension requests, requires login, or is down. |
-| Titles are garbled (`Ðèòóàë`) | Enable **Windows-1251**. |
-| Tracker finds pages but no magnets | Enable **Grab magnet from release pages**; if the site shows magnets only behind login, the tracker will not work. |
-| Random unrelated results | The site's search is fuzzy. Relevance filtering (threshold 65) cuts most noise; consider a more precise search URL if the site offers one. |
-| Everything worked yesterday, nothing today | The site changed its markup or started blocking requests. Re-check with **Test**; if the site itself is fine, report an issue. |
+Open the search URL in a normal browser tab first.
 
----
+If you can see results there but **Test** cannot, the site probably renders them with JavaScript, uses a POST form, or returns a different page to extension requests.
 
-## Security notes
+If the site used to work and suddenly stopped, check it again with **Test**. Third-party sites change their HTML all the time.
 
-- Custom tracker pages are treated as **untrusted input**: all extracted strings are validated and escaped before being shown (see the Security section of the main [README](../README.md)).
-- Only `http(s)` links of the **same origin** as the tracker become results; `javascript:`, `data:`, protocol-relative and cross-origin links are dropped.
-- Magnet links are validated against a strict format before rendering.
-- Custom trackers never receive cookies, and the Test request is fully isolated (no retries, no cookies).
+For a broken built-in parser or a useful new tracker, [open an issue](https://github.com/Ga4iGnida/Steam-Torrent-Finder/issues/new).
